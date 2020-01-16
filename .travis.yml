@@ -1,9 +1,13 @@
 language: php
 
+# Behat no longer passes when false.
 sudo: true
 
 addons:
   firefox: "47.0.1"
+  apt:
+    packages:
+      - chromium-chromedriver
 
 services:
   - mysql
@@ -14,25 +18,35 @@ cache:
     - $HOME/.npm
 
 php:
- - 7.1
+ - 7.3
 
 env:
- global:
-  - MOODLE_BRANCH=MOODLE_36_STABLE
- matrix:
-  - DB=mysqli
+  global:
+    - IGNORE_PATHS=ignore
+    - IGNORE_NAMES=ignore_name.php
+    - MUSTACHE_IGNORE_NAMES=broken.mustache
+    - DB=pgsql
+    - MOODLE_BRANCH=master
+    - PROFILE=chrome
 
-before_install:
+install:
   - phpenv config-rm xdebug.ini
   - nvm install 8.9
   - nvm use 8.9
-  - cd ../..
-  - composer create-project -n --no-dev --prefer-dist blackboard-open-source/moodle-plugin-ci ci ^2
-  - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
+  - make init
 
-install:
+  # Mimic how a Moodle plugin would be run.
+  - cp -R tests/Fixture/moodle-local_travis ../moodle-local_travis
+  - export PATH="$(cd bin; pwd):$(cd vendor/bin; pwd):$PATH"
+  - export TRAVIS_BUILD_DIR=$(cd ../moodle-local_travis; pwd)
+
+  # Finally, the standard install step.
   - moodle-plugin-ci install
 
 script:
-  - moodle-plugin-ci phpunit
-  - moodle-plugin-ci behat
+  - make test-phpunit
+
+  # This is basically "integration" testing.
+
+  - moodle-plugin-ci phpunit --coverage-text
+  - moodle-plugin-ci behat --profile $PROFILE
