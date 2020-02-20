@@ -35,22 +35,20 @@ before_install:
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
 
 install:
-  - moodle-plugin-ci add-plugin moodleou/moodle-editor_ousupsub
-  - moodle-plugin-ci add-plugin moodleou/moodle-qtype_pmatch
   - moodle-plugin-ci install
 
 script:
-  - moodle-plugin-ci phplint
-  - moodle-plugin-ci phpcpd
-  - moodle-plugin-ci phpmd || true
-  - moodle-plugin-ci codechecker
-  - moodle-plugin-ci validate
-  - moodle-plugin-ci savepoints
-  - moodle-plugin-ci mustache
-  - moodle-plugin-ci grunt || [ "$MOODLE_BRANCH" = 'master' ]
+  # - moodle-plugin-ci phplint
+  # - moodle-plugin-ci phpcpd
+  # - moodle-plugin-ci phpmd || true
+  # - moodle-plugin-ci codechecker
+  # - moodle-plugin-ci validate
+  # - moodle-plugin-ci savepoints
+  # - moodle-plugin-ci mustache
+  # - moodle-plugin-ci grunt || [ "$MOODLE_BRANCH" = 'master' ]
   - moodle-plugin-ci phpunit
 
   # The following line is a temporary work-around for https://tracker.moodle.org/browse/MDL-66378.
   # Once that is fixed, this line can go.
-  # curl https://github.com/timhunt/php-webdriver/commit/7a0aa38f591b7395939df25d8cb6677bf99a481f.patch | git apply --directory moodle/vendor/instaclick/php-webdriver
+  curl https://github.com/timhunt/php-webdriver/commit/7a0aa38f591b7395939df25d8cb6677bf99a481f.patch | git apply --directory moodle/vendor/instaclick/php-webdriver
   - moodle-plugin-ci behat --profile chrome
